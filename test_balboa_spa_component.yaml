@@ -1,0 +1,19 @@
+# this configuration file has all empty custom components set up.
+# use 'esphome test_empty.yaml compile' to build. 
+
+packages:
+  device: !include device.yaml # include our test device setup
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+balboa_spa:
+  id: test_spa
+  # name: test_spa
+
+uart:
+  tx_pin: D0
+  rx_pin: D1
+  baud_rate: 9600
