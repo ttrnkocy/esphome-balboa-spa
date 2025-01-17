@@ -24,3 +24,5 @@ binary_sensor:
       id: jet1
     jet2:
       id: jet2
+    lights:
+      id: lights
