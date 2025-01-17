@@ -16,8 +16,13 @@ void BalboaSpa::loop() {
     yield();
     while (available()) {
       read_serial();
+      update_sensors();
     }
 }
+
+void BalboaSpa::set_jet1_binary_sensor(binary_sensor::BinarySensor *sensor){ jet1_sensor = sensor; }
+void BalboaSpa::set_jet2_binary_sensor(binary_sensor::BinarySensor *sensor){ jet2_sensor = sensor; }
+void BalboaSpa::set_lights_binary_sensor(binary_sensor::BinarySensor *sensor){ lights_sensor = sensor; }
 
 float BalboaSpa::get_setup_priority() const { return esphome::setup_priority::LATE; }
 
@@ -50,6 +55,12 @@ void BalboaSpa::toggle_jet1() {
 }
 void BalboaSpa::toggle_jet2() {
     send = 0x05;
+}
+
+void BalboaSpa::update_sensors() {
+    jet1_sensor->publish_state(spaState.jet1);    
+    jet2_sensor->publish_state(spaState.jet2);
+    lights_sensor->publish_state(spaState.light);
 }
 
 void BalboaSpa::read_serial() {

@@ -11,9 +11,16 @@ external_components:
 
 balboa_spa:
   id: test_spa
-  # name: test_spa
 
 uart:
   tx_pin: D0
   rx_pin: D1
   baud_rate: 9600
+
+binary_sensor:
+  - platform: balboa_spa
+    balboa_spa_id: test_spa
+    jet1:
+      id: jet1
+    jet2:
+      id: jet2

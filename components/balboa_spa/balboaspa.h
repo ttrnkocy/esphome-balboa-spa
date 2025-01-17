@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
+#include "esphome/components/binary_sensor/binary_sensor.h"
 
 #include "spa_types.h"
 #include <CircularBuffer.hpp>
@@ -18,6 +19,10 @@ class BalboaSpa : public uart::UARTDevice, public Component {
     SpaConfig get_current_config();
     SpaState get_current_state();
 
+    void set_jet1_binary_sensor(binary_sensor::BinarySensor *sensor);    
+    void set_jet2_binary_sensor(binary_sensor::BinarySensor *sensor);
+    void set_lights_binary_sensor(binary_sensor::BinarySensor *sensor);
+
     void set_temp(int temp);
     void set_hour(int hour);
     void set_minute(int minute);
@@ -26,6 +31,10 @@ class BalboaSpa : public uart::UARTDevice, public Component {
     void toggle_jet2();
 
   private:
+    binary_sensor::BinarySensor *jet1_sensor;
+    binary_sensor::BinarySensor *jet2_sensor;
+    binary_sensor::BinarySensor *lights_sensor;
+
     CircularBuffer<uint8_t, 35> Q_in;
     CircularBuffer<uint8_t, 35> Q_out;
     uint8_t x, i, j;
@@ -49,6 +58,8 @@ class BalboaSpa : public uart::UARTDevice, public Component {
     SpaFilterSettings spaFilterSettings;
 
     void read_serial();
+    void update_sensors();
+
     uint8_t crc8(CircularBuffer<uint8_t, 35> &data);
     void ID_request();
     void ID_ack();

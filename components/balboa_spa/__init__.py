@@ -5,9 +5,10 @@ from esphome.const import CONF_ID
 
 DEPENDENCIES = ['uart']
 
+CONF_SPA_ID = "balboa_spa_id"
+
 balboa_spa_ns = cg.esphome_ns.namespace('balboa_spa')
 BalboaSpa = balboa_spa_ns.class_('BalboaSpa', cg.Component, uart.UARTDevice)
-
 
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(BalboaSpa)
