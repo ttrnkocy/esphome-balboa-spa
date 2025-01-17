@@ -82,14 +82,23 @@ void BalboaSpa::toggle_jet2() {
 }
 
 void BalboaSpa::update_sensors() {
-    if(this->jet1_sensor != nullptr)
-        jet1_sensor->publish_state(spaState.jet1);
+    if(this->jet1_sensor != nullptr && 
+       this->jet1_sensor->state != spaState.jet1)
+    {
+      jet1_sensor->publish_state(spaState.jet1);
+    }
     
-    if(this->jet2_sensor != nullptr)
-        jet2_sensor->publish_state(spaState.jet2);
+    if(this->jet2_sensor != nullptr &&
+       this->jet1_sensor->state != spaState.jet2)
+    {
+      jet2_sensor->publish_state(spaState.jet2);
+    }
 
-    if(this->lights_sensor != nullptr)
-        lights_sensor->publish_state(spaState.light);
+    if(this->lights_sensor != nullptr &&
+       this->lights_sensor->state != spaState.light)
+    {
+      lights_sensor->publish_state(spaState.light);
+    }
 }
 
 void BalboaSpa::read_serial() {
