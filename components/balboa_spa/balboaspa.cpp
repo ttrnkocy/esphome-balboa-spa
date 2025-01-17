@@ -20,9 +20,33 @@ void BalboaSpa::loop() {
     }
 }
 
-void BalboaSpa::set_jet1_binary_sensor(binary_sensor::BinarySensor *sensor){ jet1_sensor = sensor; }
-void BalboaSpa::set_jet2_binary_sensor(binary_sensor::BinarySensor *sensor){ jet2_sensor = sensor; }
-void BalboaSpa::set_lights_binary_sensor(binary_sensor::BinarySensor *sensor){ lights_sensor = sensor; }
+void BalboaSpa::set_jet1_binary_sensor(binary_sensor::BinarySensor *sensor) { 
+    jet1_sensor = sensor;
+    jet1_sensor->add_on_state_callback([this](float state) {
+        if(jet1_sensor->state != state){
+            toggle_jet1();
+        }
+    });
+}
+
+void BalboaSpa::set_jet2_binary_sensor(binary_sensor::BinarySensor *sensor) {
+    jet2_sensor = sensor;
+    jet2_sensor->add_on_state_callback([this](float state) {
+        if(jet2_sensor->state != state){
+            toggle_jet2();
+        }
+    });
+}
+    
+void BalboaSpa::set_lights_binary_sensor(binary_sensor::BinarySensor *sensor) {
+    lights_sensor = sensor;
+    
+    lights_sensor->add_on_state_callback([this](float state) {
+        if(lights_sensor->state != state){
+            toggle_light();
+        }
+    });
+}
 
 float BalboaSpa::get_setup_priority() const { return esphome::setup_priority::LATE; }
 
@@ -58,9 +82,14 @@ void BalboaSpa::toggle_jet2() {
 }
 
 void BalboaSpa::update_sensors() {
-    jet1_sensor->publish_state(spaState.jet1);    
-    jet2_sensor->publish_state(spaState.jet2);
-    lights_sensor->publish_state(spaState.light);
+    if(this->jet1_sensor != nullptr)
+        jet1_sensor->publish_state(spaState.jet1);
+    
+    if(this->jet2_sensor != nullptr)
+        jet2_sensor->publish_state(spaState.jet2);
+
+    if(this->lights_sensor != nullptr)
+        lights_sensor->publish_state(spaState.light);
 }
 
 void BalboaSpa::read_serial() {
