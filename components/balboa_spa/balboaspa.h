@@ -18,8 +18,6 @@ class BalboaSpa : public uart::UARTDevice, public Component {
     SpaConfig get_current_config();
     SpaState get_current_state();
 
-  //float get_setup_priority() const override;
-
     void set_temp(int temp);
     void set_hour(int hour);
     void set_minute(int minute);
