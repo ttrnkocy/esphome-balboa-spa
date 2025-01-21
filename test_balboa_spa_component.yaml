@@ -26,3 +26,8 @@ binary_sensor:
       id: jet2
     lights:
       id: lights
+
+
+climate:
+  - platform: balboa_spa
+    balboa_spa_id: test_spa
