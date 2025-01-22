@@ -14,7 +14,7 @@ from .. import (
     BalboaSpa,
 )
 
-BalboaSpaSensors = balboa_spa_ns.class_('BalboaSpaSensors', cg.Component, binary_sensor.BinarySensor)
+BalboaSpaSensors = balboa_spa_ns.class_('BalboaSpaSensors', cg.Component)
 
 CONF_JET1 = "jet1"
 CONF_JET2 = "jet2"

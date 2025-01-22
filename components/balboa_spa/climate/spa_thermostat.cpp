@@ -13,7 +13,15 @@ climate::ClimateTraits BalboaSpaThermostat::traits()
     return traits;
 }
 
+ void BalboaSpaThermostat::control(const climate::ClimateCall &call){
+
+ }
+
 void BalboaSpaThermostat::set_parent(BalboaSpa *parent) { spa = parent; }
+
+void BalboaSpaThermostat::loop() {
+
+}
 
 }
 }

@@ -21,6 +21,9 @@ void BalboaSpa::loop() {
 
 float BalboaSpa::get_setup_priority() const { return esphome::setup_priority::LATE; }
 
+SpaConfig BalboaSpa::get_current_config() { return spaConfig; }
+SpaState BalboaSpa::get_current_state() { return spaState; }
+
 void BalboaSpa::set_temp(int temp) {
     if (temp >= 62 || temp < 105) {
         settemp = temp;

@@ -9,7 +9,6 @@ namespace balboa_spa {
 
 class BalboaSpaThermostat : public climate::Climate, public Component {
  public:
-  void setup() override;
   void loop() override;
   void set_parent(BalboaSpa *parent);
 
