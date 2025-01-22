@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+ ci:
+    name: Building test firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4.1.7
+      - name: ESPHome 
+        uses: esphome/build-action@v4.0.3
+        with:
+          yaml-file: test_balboa_spa_component.yaml
+          version: stable
