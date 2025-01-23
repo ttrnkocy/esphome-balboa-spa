@@ -13,20 +13,26 @@ balboa_spa:
   id: test_spa
 
 uart:
-  tx_pin: D0
-  rx_pin: D1
-  baud_rate: 9600
+  id: spa_uart_bus
+  tx_pin: GPIO37
+  rx_pin: GPIO39
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  baud_rate: 115200
+  rx_buffer_size: 128
 
-binary_sensor:
+switch:
   - platform: balboa_spa
     balboa_spa_id: test_spa
     jet1:
-      id: jet1
+      name: Jet1
     jet2:
-      id: jet2
-    lights:
-      id: lights
+      name: Jet2
+    light:
+      name: Lights
 
 climate:
   - platform: balboa_spa
     balboa_spa_id: test_spa
+    name: "Spa Thermostat"
