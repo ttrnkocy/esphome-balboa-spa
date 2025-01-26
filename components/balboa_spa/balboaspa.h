@@ -13,9 +13,8 @@ namespace balboa_spa {
 // https://github.com/espressif/arduino-esp32/blob/496b8411773243e1ad88a68652d6982ba2366d6b/cores/esp32/Arduino.h#L99
 #define bitRead(value, bit)            (((value) >> (bit)) & 0x01)
 
-static const uint8_t ESPHOME_BALBOASPA_MIN_TEMPERATURE = 62; // degrees F
-static const uint8_t ESPHOME_BALBOASPA_MAX_TEMPERATURE = 105; // degrees F
-static const float   ESPHOME_BALBOASPA_TEMPERATURE_STEP = 1.0; // temperature setting step in degrees F
+static const uint8_t ESPHOME_BALBOASPA_MIN_TEMPERATURE = 26;
+static const uint8_t ESPHOME_BALBOASPA_MAX_TEMPERATURE = 40;
 static const float   ESPHOME_BALBOASPA_POLLING_INTERVAL = 250; // frequency to poll uart device
 
 #define STRON String("ON").c_str()
@@ -31,7 +30,7 @@ class BalboaSpa : public uart::UARTDevice, public PollingComponent {
     SpaConfig get_current_config();
     SpaState get_current_state();
 
-    void set_temp(int temp);
+    void set_temp(float temp);
     void set_hour(int hour);
     void set_minute(int minute);
     void toggle_light();

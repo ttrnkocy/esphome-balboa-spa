@@ -24,13 +24,20 @@ float BalboaSpa::get_setup_priority() const { return esphome::setup_priority::LA
 SpaConfig BalboaSpa::get_current_config() { return spaConfig; }
 SpaState BalboaSpa::get_current_state() { return spaState; }
 
-void BalboaSpa::set_temp(int temp) {
-    if (temp >= ESPHOME_BALBOASPA_MIN_TEMPERATURE || temp < ESPHOME_BALBOASPA_MAX_TEMPERATURE) {
-        settemp = temp;
-        send = 0xff;
+void BalboaSpa::set_temp(float temp)
+{
+    if(spaConfig.temp_scale == 1){
+      temp = ((temp * 9.0) / 5.0) + 32;
+    }
+    else
+    {
+      temp = temp * 2.0;
     }
 
-    this->update();
+    if (temp >= ESPHOME_BALBOASPA_MIN_TEMPERATURE || temp <= ESPHOME_BALBOASPA_MAX_TEMPERATURE) {
+      settemp = temp;
+      send = 0xff;
+    }
 }
 
 void BalboaSpa::set_hour(int hour) {
@@ -38,8 +45,6 @@ void BalboaSpa::set_hour(int hour) {
         sethour = hour;
         send = 0x21;
     }
-    
-    this->update();
 }
 
 void BalboaSpa::set_minute(int minute) {
@@ -47,24 +52,18 @@ void BalboaSpa::set_minute(int minute) {
         setminute = minute;
         send = 0x21;
     }
-    
-    this->update();
 }
 
 void BalboaSpa::toggle_light() {
     send = 0x11;
-    
-    this->update();
 }
+
 void BalboaSpa::toggle_jet1() {
     send = 0x04;
-    
-    this->update();
 }
+
 void BalboaSpa::toggle_jet2() {
     send = 0x05;
-    
-    this->update();
 }
 
 void BalboaSpa::read_serial() {
@@ -102,7 +101,9 @@ void BalboaSpa::read_serial() {
             ESP_LOGD("Spa/node/id", "Requesting ID");
             ID_request();
           }
-        } else if (Q_in[2] == id && Q_in[4] == 0x06) { // we have an ID, do clever stuff
+        } 
+        else if (Q_in[2] == id && Q_in[4] == 0x06) 
+        { // we have an ID, do clever stuff
             // id BF 06:Ready to Send
             if (send == 0x21) {
               Q_out.push(id);
@@ -110,13 +111,16 @@ void BalboaSpa::read_serial() {
               Q_out.push(0x21);
               Q_out.push(sethour);
               Q_out.push(setminute);
-            } else if (send == 0xff) {
+            } 
+            else if (send == 0xff) {
               // 0xff marks dirty temperature for now
               Q_out.push(id);
               Q_out.push(0xBF);
               Q_out.push(0x20);
               Q_out.push(settemp);
-            } else if (send == 0x00) {
+            } 
+            else if (send == 0x00) 
+            {
               if (have_config == 0) { // Get configuration of the hot tub
                 Q_out.push(id);
                 Q_out.push(0xBF);
@@ -126,7 +130,8 @@ void BalboaSpa::read_serial() {
                 Q_out.push(0x01);
                 ESP_LOGD("Spa/config/status", "Getting config");
                 have_config = 1;
-              } else if (have_faultlog == 0) { // Get the fault log
+              } 
+              else if (have_faultlog == 0) { // Get the fault log
                 Q_out.push(id);
                 Q_out.push(0xBF);
                 Q_out.push(0x22);
@@ -135,7 +140,8 @@ void BalboaSpa::read_serial() {
                 Q_out.push(0x00);
                 have_faultlog = 1;
                 ESP_LOGD("Spa/debug/have_faultlog", "requesting fault log, #1");
-              } else if ((have_filtersettings == 0) && (have_faultlog == 2)) { // Get the filter cycles log once we have the faultlog
+              } 
+              else if ((have_filtersettings == 0) && (have_faultlog == 2)) { // Get the filter cycles log once we have the faultlog
                 Q_out.push(id);
                 Q_out.push(0xBF);
                 Q_out.push(0x22);
@@ -144,14 +150,15 @@ void BalboaSpa::read_serial() {
                 Q_out.push(0x00);
                 ESP_LOGD("Spa/debug/have_filtersettings", "requesting filter settings, #1");
                 have_filtersettings = 1;
-              } else {
+              } 
+              else {
                 // A Nothing to Send message is sent by a client immediately after a Clear to Send message if the client has no messages to send.
                 Q_out.push(id);
                 Q_out.push(0xBF);
                 Q_out.push(0x07);
               }
-            } else {
-              // Send toggle commands
+            } 
+            else {
               Q_out.push(id);
               Q_out.push(0xBF);
               Q_out.push(0x11);
@@ -248,7 +255,7 @@ void BalboaSpa::read_serial() {
       write(Q_out[i]);
     }
 
-    print_msg(Q_out);
+    //print_msg(Q_out);
 
     flush();
 
@@ -306,121 +313,135 @@ void BalboaSpa::read_serial() {
     String s;
     double d = 0.0;
     double c = 0.0;
+    bool newState = false;
 
     // 25:Flag Byte 20 - Set Temperature
-    d = Q_in[25];    
-    spaState.target_temp = d;
-    /*
-    if (spaConfig.temp_scale == 1) {
-      d = Q_in[25];
-    } else if (spaConfig.temp_scale == 0){
-      d = Q_in[25] / 2;
-      if (Q_in[25] % 2 == 1) d += 0.5;
-    }*/
+    if (spaConfig.temp_scale == 0) {
+      d = Q_in[25] / 2.0;
+    } else if (spaConfig.temp_scale == 1){
+      d = (Q_in[25] - 32.0) * 5.0/9.0;
+    }
 
-    ESP_LOGD("Spa/target_temp/state", String(d, 2).c_str());
+    if(d != spaState.target_temp)
+    {
+      newState = true;
+      spaState.target_temp = d;
+      ESP_LOGD("Spa/target_temp/state", String(d, 2).c_str());
+    }
 
     // 7:Flag Byte 2 - Actual temperature
-    if (Q_in[7] != 0xFF) {
-      d = Q_in[7];
-      /* this doesn't seem reliable
-      if (spaConfig.temp_scale == 1) {
-        d = Q_in[7];
-      } else if (spaConfig.temp_scale == 0){
-        d = Q_in[7] / 2;
-        if (Q_in[7] % 2 == 1) d += 0.5;
+    if (Q_in[7] != 0xFF) 
+    {
+      if (spaConfig.temp_scale == 0) {
+        d = Q_in[7] / 2.0;
+      } else if (spaConfig.temp_scale == 1){
+        d = (Q_in[7] - 32.0) * 5.0/9.0;
       }
-      */
+
       if (c > 0) {
         if ((d > c * 1.2) || (d < c * 0.8)) d = c; //remove spurious readings greater or less than 20% away from previous read
       }
 
-      ESP_LOGD("Spa/temperature/state", String(d, 2).c_str());
       c = d;
     } else {
       d = 0;
     }
-    spaState.current_temp = d;
+
+    if(d != spaState.current_temp)
+    {
+      newState = true;
+      spaState.current_temp = d;      
+      ESP_LOGD("Spa/temperature/state", String(d, 2).c_str());
+    }
+
     // REMARK Move upper publish to HERE to get 0 for unknown temperature
 
     // 8:Flag Byte 3 Hour & 9:Flag Byte 4 Minute => Time
     if (Q_in[8] < 10) s = "0"; else s = "";
-    spaState.hour = Q_in[8];
+    sethour = Q_in[8];
     s += String(Q_in[8]) + ":";
     if (Q_in[9] < 10) s += "0";
     s += String(Q_in[9]);
-    spaState.minutes = Q_in[9];
-    ESP_LOGD("Spa/time/state", s.c_str());
-    sethour = spaState.hour;
-    setminute = spaState.minutes;
+    setminute = Q_in[9];
 
-    // 10:Flag Byte 5 - Heating Mode
-    switch (Q_in[10]) {
-      case 0:
-        ESP_LOGD("Spa/heatingmode/state", STRON); //Ready
-        spaState.restmode = 0;
-        break;
-      case 3:// Ready-in-Rest
-        spaState.restmode = 0;
-        break;
-      case 1:
-        ESP_LOGD("Spa/heatingmode/state", STROFF); //Rest
-        spaState.restmode = 1;
-        break;
+    if(sethour != spaState.hour || setminute != spaState.minutes)
+    {
+      // Do not trigger a new state for clock
+      // newState = true;
+      // ESP_LOGD("Spa/time/state", s.c_str());
+      spaState.hour = sethour;
+      spaState.minutes = setminute;
     }
 
+    d = Q_in[10];
+    if(d != spaState.restmode)
+    {
+      newState = true;
+      spaState.restmode = d ;      
+      ESP_LOGD("Spa/restmode/state", String(d, 0).c_str());
+    }
+    
     // 15:Flags Byte 10 / Heat status, Temp Range
-    d = bitRead(Q_in[15], 4);
-    if (d == 0) ESP_LOGD("Spa/heatstate/state", STROFF);
-    else if (d == 1 || d == 2) ESP_LOGD("Spa/heatstate/state", STRON);
+    d = bitRead(Q_in[15], 4);    
+    if (d != spaState.heat_state)
+    {
+      newState = true;
+      ESP_LOGD("Spa/heatstate/state", String(d, 0).c_str());
+      spaState.heat_state = d;
+    }
 
     d = bitRead(Q_in[15], 2);
-    if (d == 0) {
-      ESP_LOGD("Spa/highrange/state", STROFF); //LOW
-      spaState.highrange = 0;
-    } else if (d == 1) {
-      ESP_LOGD("Spa/highrange/state", STRON); //HIGH
-      spaState.highrange = 1;
+    if (d != spaState.highrange) 
+    {
+      newState = true;
+      ESP_LOGD("Spa/highrange/state", String(d, 0).c_str()); //LOW
+      spaState.highrange = d;
     }
 
     // 16:Flags Byte 11
-    if (bitRead(Q_in[16], 1) == 1) {
-      ESP_LOGD("Spa/jet_1/state", STRON);
-      spaState.jet1 = 1;
-    } else {
-      ESP_LOGD("Spa/jet_1/state", STROFF);
-      spaState.jet1 = 0;
-    }
+    d = bitRead(Q_in[16], 1);
+    if (d != spaState.jet1) 
+    {
+      newState = true;
+      ESP_LOGD("Spa/jet_1/state", String(d, 0).c_str());
+      spaState.jet1 = d;
+    } 
 
-    if (bitRead(Q_in[16], 3) == 1) {
-      ESP_LOGD("Spa/jet_2/state", STRON);
-      spaState.jet2 = 1;
-    } else {
-      ESP_LOGD("Spa/jet_2/state", STROFF);
-      spaState.jet2 = 0;
+    d = bitRead(Q_in[16], 3);
+    if (d != spaState.jet2) 
+    {
+      newState = true;
+      ESP_LOGD("Spa/jet_2/state", String(d, 0).c_str());
+      spaState.jet2 = d;
     }
 
     // 18:Flags Byte 13
-    if (bitRead(Q_in[18], 1) == 1)
-      ESP_LOGD("Spa/circ/state", STRON);
-    else
-      ESP_LOGD("Spa/circ/state", STROFF);
+    d = bitRead(Q_in[18], 1);
+    if (d != spaState.circulation)
+    {
+      newState = true;
+      ESP_LOGD("Spa/circ/state", String(d, 0).c_str());
+      spaState.circulation = d;
+    }
 
-    if (bitRead(Q_in[18], 2) == 1) {
-      ESP_LOGD("Spa/blower/state", STRON);
-      spaState.blower = 1;      
-    } else {
-      ESP_LOGD("Spa/blower/state", STROFF);
-      spaState.blower = 0;
+    d = bitRead(Q_in[18], 2);
+    if (d != spaState.blower) 
+    {
+      newState = true;
+      ESP_LOGD("Spa/blower/state", String(d, 0).c_str());
+      spaState.blower = d;      
     }
+
+    d = Q_in[19] == 0x03;
     // 19:Flags Byte 14
-    if (Q_in[19] == 0x03) {
-      ESP_LOGD("Spa/light/state", STRON);
-      spaState.light = 1;
-    } else {
-      ESP_LOGD("Spa/light/state", STROFF);
-      spaState.light = 0;
+    if (d != spaState.light) 
+    {
+      newState = true;
+      ESP_LOGD("Spa/light/state",  String(d, 0).c_str());
+      spaState.light = d;
     }
+
+    // TODO: callback on newState
 
     last_state_crc = Q_in[Q_in[1]];
   }

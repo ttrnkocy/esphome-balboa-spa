@@ -20,7 +20,7 @@ namespace balboa_spa {
         uint8_t mister :1;
         uint8_t aux1 :1;
         uint8_t aux2 :1;
-        uint8_t temp_scale :1; //0 -> Farenheit, 1-> Celcius
+        uint8_t temp_scale :1; //1 -> Farenheit, 0-> Celcius
     };
 
     struct SpaState {
@@ -29,11 +29,13 @@ namespace balboa_spa {
         uint8_t blower :1;
         uint8_t light :1;
         uint8_t restmode:1;
-        uint8_t highrange:1;
+        uint8_t heat_state:2;
+        uint8_t highrange:1;        
+        uint8_t circulation:1;
         uint8_t hour :5;
         uint8_t minutes :6;
-        double current_temp;
-        double target_temp;
+        float   current_temp;
+        float   target_temp;
     };
 
     struct SpaFaultLog {
