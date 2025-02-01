@@ -1,3 +1,4 @@
+#include <string>
 #include "esphome.h"
 #include "esphome/core/log.h"
 #include "balboaspa.h"
@@ -22,7 +23,7 @@ void BalboaSpa::update() {
 float BalboaSpa::get_setup_priority() const { return esphome::setup_priority::LATE; }
 
 SpaConfig BalboaSpa::get_current_config() { return spaConfig; }
-SpaState BalboaSpa::get_current_state() { return spaState; }
+SpaState* BalboaSpa::get_current_state() { return &spaState; }
 
 void BalboaSpa::set_temp(float temp)
 {
@@ -322,11 +323,9 @@ void BalboaSpa::read_serial() {
       d = (Q_in[25] - 32.0) * 5.0/9.0;
     }
 
-    if(d != spaState.target_temp)
+    if(d != 0)
     {
-      newState = true;
-      spaState.target_temp = d;
-      ESP_LOGD("Spa/target_temp/state", String(d, 2).c_str());
+      spaState.set_target_temp(d);
     }
 
     // 7:Flag Byte 2 - Actual temperature
@@ -347,10 +346,9 @@ void BalboaSpa::read_serial() {
       d = 0;
     }
 
-    if(d != spaState.current_temp)
+    if(d != 0)
     {
-      newState = true;
-      spaState.current_temp = d;      
+      spaState.set_current_temp(d);   
       ESP_LOGD("Spa/temperature/state", String(d, 2).c_str());
     }
 
@@ -374,21 +372,11 @@ void BalboaSpa::read_serial() {
     }
 
     d = Q_in[10];
-    if(d != spaState.restmode)
-    {
-      newState = true;
-      spaState.restmode = d ;      
-      ESP_LOGD("Spa/restmode/state", String(d, 0).c_str());
-    }
+    spaState.set_rest_mode(d);
     
     // 15:Flags Byte 10 / Heat status, Temp Range
-    d = bitRead(Q_in[15], 4);    
-    if (d != spaState.heat_state)
-    {
-      newState = true;
-      ESP_LOGD("Spa/heatstate/state", String(d, 0).c_str());
-      spaState.heat_state = d;
-    }
+    d = bitRead(Q_in[15], 4);
+    spaState.set_heat_state(d);
 
     d = bitRead(Q_in[15], 2);
     if (d != spaState.highrange) 

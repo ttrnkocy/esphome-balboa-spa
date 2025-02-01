@@ -29,39 +29,42 @@ void BalboaSpaThermostat::set_parent(BalboaSpa *parent) { spa = parent; }
 
 void BalboaSpaThermostat::update() {
     yield();
-    SpaState spaState = spa->get_current_state();
+    SpaState* spaState = spa->get_current_state();
     bool update = false;
+    float target_temp = spaState->get_target_temp();
 
-    if(this->target_temperature != spaState.target_temp)
+    if(target_temp > 0 && this->target_temperature != target_temp)
     {
-        this->target_temperature = spaState.target_temp;
+        this->target_temperature = target_temp;
         update = true;
     }
 
-    if(this->current_temperature != spaState.current_temp)
+    float current_temp = spaState->get_current_temp();
+    if(current_temp > 0 && this->current_temperature != current_temp)
     {
-        this->current_temperature = spaState.current_temp;
+        this->current_temperature = current_temp;
         update = true;
     }
 
-/*
-    if(spaState.heat_state > 0 && this->action != climate::CLIMATE_ACTION_HEATING)
-    {
-        this->action = climate::CLIMATE_ACTION_HEATING;
-        update = true;
-    }
-    else if(this->action != climate::CLIMATE_ACTION_IDLE)
+    uint8_t heat_state = spaState->get_heat_state();
+    if(heat_state == 0 && this->action != climate::CLIMATE_ACTION_IDLE)
     {
         this->action = climate::CLIMATE_ACTION_IDLE;
         update = true;
     }
-*/
-    if(spaState.restmode && this->mode != climate::CLIMATE_MODE_OFF)
+    else if(heat_state < 254 && this->action != climate::CLIMATE_ACTION_HEATING)
+    {
+        this->action = climate::CLIMATE_ACTION_HEATING;
+        update = true;
+    }
+
+    uint8_t rest_mode = spaState->get_rest_mode();
+    if(rest_mode == 1 && this->mode != climate::CLIMATE_MODE_OFF)
     {
         this->mode = climate::CLIMATE_MODE_OFF;
         update = true;
     }
-    else if(this->mode != climate::CLIMATE_MODE_HEAT)
+    else if(rest_mode == 0 && this->mode != climate::CLIMATE_MODE_HEAT)
     {
         this-> mode = climate::CLIMATE_MODE_HEAT;
         update = true;
