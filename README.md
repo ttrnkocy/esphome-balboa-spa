@@ -72,3 +72,8 @@ sensor:
     heatstate:
       name: Heat State
 ```
+ESP WebUI
+![image](https://github.com/user-attachments/assets/af602be2-da9e-4880-8fb8-e7f7f9122977)
+
+Home Assistant UI
+![image](https://github.com/user-attachments/assets/a37a7e08-94b2-4231-83ca-0ffc4646fbfa)
