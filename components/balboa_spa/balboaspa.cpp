@@ -18,6 +18,13 @@ void BalboaSpa::update() {
     while (available()) {
       read_serial();
     }
+
+    yield();
+    // Run through listeners
+    for (auto &listener : this->listeners_) {
+      listener(&spaState);
+      yield();
+    }
 }
 
 float BalboaSpa::get_setup_priority() const { return esphome::setup_priority::LATE; }
@@ -323,9 +330,13 @@ void BalboaSpa::read_serial() {
       d = (Q_in[25] - 32.0) * 5.0/9.0;
     }
 
-    if(d != 0)
+    // Ignore values which are outside what is allowed
+    if(d != 0 && 
+       d >= ESPHOME_BALBOASPA_MIN_TEMPERATURE && 
+       d <= ESPHOME_BALBOASPA_MAX_TEMPERATURE)
     {
       spaState.set_target_temp(d);
+      ESP_LOGD("Spa/temperature/target", String(d, 2).c_str());
     }
 
     // 7:Flag Byte 2 - Actual temperature
@@ -346,9 +357,11 @@ void BalboaSpa::read_serial() {
       d = 0;
     }
 
-    if(d != 0)
+    // it isn't possible for this value to be above boiling
+    // probably a smaller limit here, but should filter out more bad data
+    if(d != 0 && d < 100)
     {
-      spaState.set_current_temp(d);   
+      spaState.set_current_temp(d);
       ESP_LOGD("Spa/temperature/state", String(d, 2).c_str());
     }
 
