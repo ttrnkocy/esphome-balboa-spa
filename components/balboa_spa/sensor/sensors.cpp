@@ -2,6 +2,11 @@
 #include "esphome/core/log.h"
 #include "sensors.h"
 
+
+using namespace std; // May be you didn't write this line.
+
+
+
 namespace esphome {
 namespace balboa_spa {
 
