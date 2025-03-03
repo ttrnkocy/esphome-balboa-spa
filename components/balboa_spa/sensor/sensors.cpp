@@ -1,6 +1,6 @@
 include <string>
-#include "esphome/core/log.h"
-#include "sensors.h"
+include "esphome/core/log.h"
+include "sensors.h"
 
 namespace esphome {
 namespace balboa_spa {
