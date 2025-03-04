@@ -1,5 +1,4 @@
 #include <string>
-using namespace std;
 #include "esphome/core/log.h"
 #include "sensors.h"
 
@@ -46,7 +45,8 @@ void BalboaSpaSensors::update(SpaState* spaState) {
             }
             break;
         default:
-            ESP_LOGD("Spa/Sensors/UnknownSensorType", String((uint8_t)sensor_type, 0).c_str());
+            //ESP_LOGD("Spa/Sensors/UnknownSensorType", String((uint8_t)sensor_type, 0).c_str());
+            ESP_LOGD("Spa/Sensors/UnknownSensorType", std::to_string((uint8_t)sensor_type).c_str());
             // Unknown enum value. Ignore
             return;
     }
